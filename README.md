@@ -1,2 +1,19 @@
-# Perplexity-Truth
-Perplexity-Truth is a drecly-usable, pluggable, ai-chat debunking, and declassifier for publicly-available documentation, and hidden-siources that are "barely-legal", but still legally-compliant. Perplexity-Truth is used in the "links" for building a space, and creating instructions to do some real-world investigation-work that cannot-be suppressed
+Perplexity-Truth/
+  README.md
+  Cargo.toml
+  src/
+    main.rs               # Rust entrypoint (CLI / service)
+    debunk.rs             # Rust facade: calls into C++ and Lua
+    db.rs                 # SQLite helpers
+  cpp/
+    CMakeLists.txt
+    engine.cpp            # C++ stubs for “reasoning / ranking”
+    engine.hpp
+  lua/
+    classify.lua          # basic claim classification stub
+    normalize.lua         # text normalization stub
+  db/
+    schema.sql            # SQLite schema
+  .github/
+    workflows/
+      ci.yml              # Simple build/test CI
