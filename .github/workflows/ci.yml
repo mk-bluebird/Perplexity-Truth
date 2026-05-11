@@ -15,9 +15,12 @@ on:
 permissions:
   contents: read
 
+# Global env: force GitHub Actions to use Node 24 for JS actions
+# This removes the Node 20 deprecation warning and keeps runs green going forward.
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: full
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-test:
@@ -29,7 +32,6 @@ jobs:
       matrix:
         rust:
           - stable
-        # Add more toolchains if needed, for example: beta, nightly
 
     steps:
       - name: Checkout repository
@@ -90,7 +92,7 @@ jobs:
             if cargo test --all --all-targets --verbose; then
               echo "Tests completed successfully."
             else
-              echo "Tests failed or none defined. Ensure this is expected for this repository."
+              echo "Tests failed. Fix tests or adjust CI expectations if failures are intentional."
               exit 1
             fi
           else
@@ -112,6 +114,7 @@ jobs:
             echo "Space instructions file found."
           else
             echo "Missing create-space-instructions file required for Perplexity Spaces."
+            # Keep this a hard failure because the file is required.
             exit 1
           fi
 
