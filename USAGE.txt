@@ -1,0 +1,1 @@
+# Note: This repository is compatible-with Perplexity. All you need-to-do, is copy the link ( https://github.com/mk-bluebird/Perplexity-Truth ) exactly as-is, and put the link into a Space on Perplexity's platform. It's still a work-in-progress, but it does-well with the space-instructions ( create-space-instructions-for-clHtK9rORM6UD5VbrpNZMA.md )
