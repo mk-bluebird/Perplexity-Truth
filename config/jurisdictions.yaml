@@ -1,0 +1,123 @@
+# config/jurisdictions.yaml
+# Jurisdiction definitions for policy lookup and compliance checks
+# Version: 1.0.0 | Last Updated: 2026-05-11
+# 
+# Format: 
+#   jurisdiction_id:
+#     name: Human-readable name
+#     type: state | federal | supranational | international
+#     laws:
+#       - name: Law/instrument name
+#         url: Official source URL
+#         effective_date: YYYY-MM-DD
+#         topics: [list of applicable policy topics]
+#     parent_jurisdictions: [list of broader jurisdiction IDs for inheritance]
+#     update_frequency: quarterly | annual | ad-hoc
+
+US-CO:
+  name: Colorado, United States
+  type: state
+  laws:
+    - name: Colorado Privacy Act
+      url: https://leg.colorado.gov/bills/sb21-190
+      effective_date: 2023-07-01
+      topics:
+        - sensitive_classification
+        - consent
+        - purpose_limitation
+        - third_party_sharing
+  parent_jurisdictions:
+    - US-FEDERAL
+  update_frequency: quarterly
+
+US-CA:
+  name: California, United States
+  type: state
+  laws:
+    - name: California Consumer Privacy Act (as amended)
+      url: https://oag.ca.gov/privacy/ccpa
+      effective_date: 2023-01-01
+      topics:
+        - sensitive_classification
+        - consent
+        - purpose_limitation
+        - children
+  parent_jurisdictions:
+    - US-FEDERAL
+  update_frequency: quarterly
+
+US-FEDERAL:
+  name: United States Federal
+  type: federal
+  laws:
+    - name: MIND Act (Proposed)
+      url: https://www.congress.gov/bill/118th-congress/house-bill/XXXX
+      effective_date: null  # Not yet enacted
+      topics:
+        - sensitive_classification
+        - consent
+        - subliminal_manipulation
+        - emotion_inference
+    - name: FTC Act Section 5
+      url: https://www.ftc.gov/legal-library/browse/statutes
+      effective_date: 1914-09-26
+      topics:
+        - unfair_deceptive_practices
+  update_frequency: ad-hoc
+
+EU:
+  name: European Union
+  type: supranational
+  laws:
+    - name: AI Act
+      url: https://artificialintelligenceact.eu
+      effective_date: 2025-02-02
+      topics:
+        - subliminal_manipulation
+        - emotion_inference
+        - workplace
+        - school
+    - name: General Data Protection Regulation (GDPR)
+      url: https://gdpr-info.eu
+      effective_date: 2018-05-25
+      topics:
+        - sensitive_classification
+        - consent
+        - purpose_limitation
+        - data_retention
+  parent_jurisdictions:
+    - GLOBAL_HR
+  update_frequency: annual
+
+GLOBAL_HR:
+  name: International Human Rights
+  type: international
+  laws:
+    - name: International Covenant on Civil and Political Rights (ICCPR)
+      url: https://www.ohchr.org/en/instruments-mechanisms/instruments/international-covenant-civil-and-political-rights
+      effective_date: 1976-03-23
+      topics:
+        - freedom_of_thought
+        - mental_privacy
+        - mental_integrity
+    - name: UNESCO Recommendation on the Ethics of AI
+      url: https://unesdoc.unesco.org/ark:/48223/pf0000381137
+      effective_date: 2021-11-24
+      topics:
+        - mental_privacy
+        - cognitive_liberty
+        - consent
+  update_frequency: annual
+
+CHILE:
+  name: Chile
+  type: state
+  laws:
+    - name: Constitutional Amendment on Neurorights
+      url: https://www.bcn.cl/leychile/navegar?idNorma=1163825
+      effective_date: 2021-12-16
+      topics:
+        - mental_privacy
+        - mental_integrity
+        - cognitive_liberty
+  update_frequency: ad-hoc
