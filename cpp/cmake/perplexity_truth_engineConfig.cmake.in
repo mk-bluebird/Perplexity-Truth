@@ -1,0 +1,18 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# Add any required dependencies here
+# Example:
+# find_dependency(OpenSSL REQUIRED)
+# find_dependency(nlohmann_json REQUIRED)
+
+# Include the targets file
+include("${CMAKE_CURRENT_LIST_DIR}/perplexity_truth_engineTargets.cmake")
+
+check_required_components(perplexity_truth_engine)
+
+# Provide interface targets for users
+if(NOT TARGET perplexity_truth::perplexity_truth_engine)
+    add_library(perplexity_truth::perplexity_truth_engine ALIAS perplexity_truth_engine)
+endif()
