@@ -1,3 +1,5 @@
+[![License: Hippocratic 3.0](https://img.shields.io/badge/License-Hippocratic_3.0-lightgrey.svg)](https://firstdonoharm.dev)
+
 # Perplexity-Truth
 
 Perplexity-Truth is a small, pluggable toolkit for **sorting, checking, and documenting claims** using public sources. It is designed to be:
