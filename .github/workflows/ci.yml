@@ -15,12 +15,9 @@ on:
 permissions:
   contents: read
 
-# Global env: force GitHub Actions to use Node 24 for JS actions
-# This removes the Node 20 deprecation warning and keeps runs green going forward.
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: full
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-test:
@@ -35,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@master
@@ -88,7 +85,6 @@ jobs:
       - name: Run tests
         run: |
           if ls **/Cargo.toml >/dev/null 2>&1; then
-            # Run tests; if there truly are none, exit 0 instead of failing CI
             if cargo test --all --all-targets --verbose; then
               echo "Tests completed successfully."
             else
@@ -106,22 +102,23 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Validate Space instructions presence
         run: |
           if [ -f "create-space-instructions-for-clHtK9rORM6UD5VbrpNZMA.md" ]; then
-            echo "Space instructions file found."
+            echo "✓ Space instructions file found."
           else
-            echo "Missing create-space-instructions file required for Perplexity Spaces."
-            # Keep this a hard failure because the file is required.
+            echo "✗ Missing create-space-instructions file required for Perplexity Spaces."
             exit 1
           fi
 
       - name: Basic YAML lint for workflows
-        uses: ibiqlik/action-yamllint@v3
-        with:
-          file_or_dir: .github/workflows
-          format: github
-        env:
-          YAMLLINT_CONFIG_FILE: .yamllint.yml
+        run: |
+          if command -v yamllint &> /dev/null; then
+            yamllint -f github .github/workflows
+          else
+            echo "yamllint not found; installing..."
+            pip install yamllint
+            yamllint -f github .github/workflows
+          fi
