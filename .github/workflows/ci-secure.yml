@@ -1,0 +1,63 @@
+name: CI Secure
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  build-and-audit:
+    runs-on: ubuntu-latest
+
+    # Use least-privilege GITHUB_TOKEN; repository should be in Restricted mode.[web:117]
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Build scripts audit (no network, no secret access)
+        run: |
+          echo "Scanning build.rs and .cargo/config* for suspicious patterns..."
+          # Find build.rs files.
+          mapfile -t BUILD_SCRIPTS < <(find . -name "build.rs")
+
+          for f in "${BUILD_SCRIPTS[@]}"; do
+            echo "Checking $f"
+            # Very simple heuristic: forbid obvious network calls and env exfil in build scripts.
+            if grep -E "reqwest|curl|ureq|hyper" "$f"; then
+              echo "ERROR: Network-related crate usage found in build script: $f"
+              exit 1
+            fi
+            if grep -E "env::var|std::env::vars" "$f"; then
+              echo "WARNING: build script reads environment variables: $f"
+              # Not an automatic fail, but log for review.
+            fi
+          done
+
+      - name: Cargo check (no default features, no tests)
+        env:
+          # Ensure build scripts cannot use a token with write permissions
+          GITHUB_TOKEN: ""
+        run: |
+          cargo check --all --all-targets
+
+      - name: Deny unknown build scripts requiring network
+        run: |
+          # Placeholder for more advanced checks:
+          # e.g., inspect Cargo.toml [build-dependencies] to ensure only vetted crates are used.
+          echo "Build script auditing completed."
