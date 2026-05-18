@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Perplexity-Truth Invariant Validator API
+  version: 0.1.0
+
+paths:
+  /validate:
+    post:
+      summary: Validate a response against configured invariants.
+      operationId: validateResponse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - response_text
+              properties:
+                response_text:
+                  type: string
+                  description: "Full text of the AI-chat response to validate."
+                metadata:
+                  type: object
+                  description: "Optional structured metadata about claims, sources, tiers."
+                  additionalProperties: true
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    description: "True if no invariant produced a blocking error."
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                  errors:
+                    type: array
+                    items:
+                      type: string
+        "400":
+          description: Invalid input
