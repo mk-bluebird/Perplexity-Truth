@@ -5,12 +5,6 @@ members = [
     "neurorights-defense",
 ]
 
-# Shared dependency overrides (vendor support).
-[patch.crates-io]
-# Dependencies will be vendored under ./vendor; this block tells Cargo to use them.
-# `cargo vendor` will populate this directory.
-"*"] = { path = "vendor" }
-
 [workspace.package]
 edition = "2021"
 rust-version = "1.75"
