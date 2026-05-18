@@ -1,0 +1,93 @@
+# Denylist configuration for CI pattern scanning.
+# This file is:
+# - Human-editable
+# - Diff-friendly (TOML is line-oriented and stable)
+# - Easy to parse from shell, Python, or Rust
+#
+# CI is expected to:
+# - Load `deny_patterns[*].pattern` as literal or simple regex patterns.
+# - Honor `enabled = true` only; disabled entries are ignored.
+# - Optionally use `category` and `severity` for reporting.
+
+[meta]
+version = 1
+description = "Central denylist for suspicious patterns and weapon-strings."
+
+# Each [[deny_patterns]] block defines a pattern:
+# - pattern: string to search for (exact match or simple regex, depending on CI script)
+# - description: human-readable explanation
+# - category: broad type (e.g., "destructive", "exfiltration", "platform-violation")
+# - severity: "error" or "warn"
+# - enabled: if false, CI may ignore the pattern
+
+[[deny_patterns]]
+pattern = "rm -rf /"
+description = "Destructive shell command targeting root filesystem."
+category = "destructive"
+severity = "error"
+enabled = true
+
+[[deny_patterns]]
+pattern = "eval("
+description = "Dynamic evaluation function often used to execute injected code."
+category = "code-execution"
+severity = "error"
+enabled = true
+
+[[deny_patterns]]
+pattern = "exec("
+description = "Generic exec call; may be benign but requires review."
+category = "code-execution"
+severity = "warn"
+enabled = true
+
+[[deny_patterns]]
+pattern = "system("
+description = "System command execution; high risk of abuse."
+category = "code-execution"
+severity = "error"
+enabled = true
+
+[[deny_patterns]]
+pattern = "curl http"
+description = "Unannotated http download via curl; can be used for payload fetching."
+category = "exfiltration"
+severity = "warn"
+enabled = true
+
+[[deny_patterns]]
+pattern = "wget http"
+description = "Unannotated http download via wget; can be used for payload fetching."
+category = "exfiltration"
+severity = "warn"
+enabled = true
+
+[[deny_patterns]]
+pattern = "base64 -d"
+description = "Inline base64 decoding often used to hide payloads."
+category = "obfuscation"
+severity = "warn"
+enabled = true
+
+[[deny_patterns]]
+pattern = "Set-ExecutionPolicy"
+description = "PowerShell execution policy change; suspicious in most repos."
+category = "platform-violation"
+severity = "error"
+enabled = true
+
+# Example of a platform-specific or policy pattern:
+[[deny_patterns]]
+pattern = "API_KEY="
+description = "Hard-coded API key indicator."
+category = "secret-leak"
+severity = "error"
+enabled = true
+
+# Example of a disabled entry (kept for history/documentation):
+[[deny_patterns]]
+pattern = "ALLOWLISTED_TEST_PATTERN"
+description = "Example pattern that is currently disabled."
+category = "test"
+severity = "warn"
+enabled = false
