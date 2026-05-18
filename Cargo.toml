@@ -119,3 +119,8 @@ rustdoc-args = ["--cfg", "docsrs"]
 [[bench]]
 name = "classifier_benchmark"
 harness = false
+
+[[bin]]
+name = "social-summary"
+path = "src/cli/social_summary.rs"
+required-features = ["cli-tool"]
