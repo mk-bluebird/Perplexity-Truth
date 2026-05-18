@@ -118,4 +118,4 @@ This document outlines legal design choices intended to protect maintainers, con
     - Provide tools that actively discourage harmful uses,
     - Keep maintainers at arm’s length from individual user allegations.
 
-By combining ethical licensing (Hippocratic License 3.0), human-rights–aligned governance, and strong technical safeguards against misuse, the project aims to maximize protection for maintainers and users while keeping the code and methods open and usable for documenting serious neurorights and civil-liberties concerns.[web:71][web:72][web:74][web:79][web:78]
+By combining ethical licensing (Hippocratic License 3.0), human-rights–aligned governance, and strong technical safeguards against misuse, the project aims to maximize protection for maintainers and users while keeping the code and methods open and usable for documenting serious neurorights and civil-liberties concerns.
