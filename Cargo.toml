@@ -5,6 +5,9 @@ members = [
     "neurorights-defense",
 ]
 
+# If you want vendoring, prefer .cargo/config.toml for safety and clarity.
+# [patch.crates-io] is intentionally omitted here to avoid guessing behavior.
+
 [workspace.package]
 edition = "2021"
 rust-version = "1.75"
@@ -38,7 +41,8 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Perplexity-Truth Contributors"]
 description = "Evidence-tiered, invariants-driven analysis toolkit for neurorights, civil liberties, and documentation of complex incidents."
-license = "Apache-2.0"
+# License is governed by the LICENSE file (Hippocratic 3.0). Do NOT guess here.
+license = "Hippocratic-3.0"
 repository = "https://github.com/mk-bluebird/Perplexity-Truth"
 readme = "README.md"
 keywords = ["neurorights", "privacy", "compliance", "neurotechnology", "ai-ethics"]
