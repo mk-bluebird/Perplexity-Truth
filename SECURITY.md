@@ -144,4 +144,38 @@ If you discover a serious vulnerability or platform-policy risk:
   - Harass or harm users, or
   - Damage the project’s reputation.
 
+---
+
+## 9. Resistance to Neuromodulation “Kill Switch” Mandates
+
+Some future regulations might require:
+
+- Centralized “kill switches” that can remotely disable or alter user-modifiable code,
+- Backdoors that allow third parties to override user control in software interacting with BCI or neurodevices.
+
+This project commits to the following:
+
+- **No remote kill switches:**
+  - The codebase will not implement features that allow external parties (including states or corporations) to silently disable, backdoor, or override user-controlled analysis or documentation tools.
+
+- **Local-first architecture:**
+  - Where the software interacts with neurorights-relevant data, it is designed to:
+    - Run locally under user control,
+    - Use local configuration files for invariants and security policies,
+    - Avoid dependencies on centralized authorization services.
+
+- **Technical compatibility without surrendering sovereignty:**
+  - If future rules require some form of “safety interlock”:
+    - We will prefer transparent, user-controlled toggles (e.g., local config flags) over remote control mechanisms.
+    - Any such interlock must be:
+      - Visible in code and documentation,
+      - Under the user’s direct control,
+      - Not a hidden backdoor.
+
+- **No special access for third parties:**
+  - The project will not add code that:
+    - Grants privileged access to state agencies or private actors,
+    - Allows them to unilaterally override user choices or silence documentation.
+
+This “resistance declaration” is not a guarantee against external regulation, but it sets a clear design stance: preserve user sovereignty and neurorights while maintaining transparent, verifiable safety mechanisms.[web:139][web:145]
 Violations may result in reverting commits, blocking contributors, and reporting abuse through proper channels.
