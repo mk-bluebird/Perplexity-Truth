@@ -1,0 +1,70 @@
+[package]
+name = "neurorights-defense"
+version = "0.1.0"
+edition = "2021"
+authors = ["Perplexity-Truth Contributors"]
+description = "Core library for neurorights compliance analysis, neural data classification, and rights-based reporting."
+# Same license as the repo: Hippocratic 3.0. No guessing, just mirroring LICENSE.
+license = "Hippocratic-3.0"
+repository = "https://github.com/mk-bluebird/Perplexity-Truth"
+keywords = ["neurorights", "privacy", "compliance", "neurotechnology", "ai-ethics"]
+categories = ["science", "web-programming"]
+readme = "../README.md"
+rust-version = "1.75"
+
+[lib]
+name = "neurorights_defense"
+path = "src/lib.rs"
+crate-type = ["lib", "cdylib"]
+
+[[bin]]
+name = "neurorights-cli"
+path = "src/bin/cli.rs"
+required-features = ["cli-tool"]
+
+[[example]]
+name = "classify_scenario"
+path = "examples/classify_scenario.rs"
+
+[[example]]
+name = "policy_lookup"
+path = "examples/policy_lookup.rs"
+
+[[example]]
+name = "generate_report"
+path = "examples/generate_report.rs"
+
+[dependencies]
+rusqlite = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+
+regex = { workspace = true }
+lazy_static = { workspace = true }
+once_cell = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true, optional = true }
+clap = { workspace = true, optional = true }
+colored = { workspace = true, optional = true }
+serde_yaml = { workspace = true }
+toml = { workspace = true }
+uuid = { workspace = true }
+
+[features]
+default = ["sqlite-bundled"]
+sqlite-bundled = ["rusqlite/bundled"]
+lua-scripting = []
+cli-tool = ["clap", "colored", "env_logger"]
+full = ["sqlite-bundled", "lua-scripting", "cli-tool"]
+
+[dev-dependencies]
+tempfile = "3.10"
+assert_fs = "1.1"
+criterion = "0.5"
+proptest = "1.4"
+
+[build-dependencies]
+cc = "1.0"
