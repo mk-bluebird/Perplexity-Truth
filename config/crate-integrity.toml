@@ -1,0 +1,26 @@
+# Crate integrity audit database.
+#
+# Each entry pins a specific crate name + version to an expected SHA-256
+# checksum of the .crate tarball or vendored directory.
+#
+# These values should be generated offline and reviewed, then committed.
+
+[[crate]]
+name = "serde"
+version = "1.0.202"
+checksum = "SHA256:REPLACE_WITH_REAL_CHECKSUM_FOR_SERDE_1_0_202"
+
+[[crate]]
+name = "serde_json"
+version = "1.0.117"
+checksum = "SHA256:REPLACE_WITH_REAL_CHECKSUM_FOR_SERDE_JSON_1_0_117"
+
+[[crate]]
+name = "tokio"
+version = "1.37.0"
+checksum = "SHA256:REPLACE_WITH_REAL_CHECKSUM_FOR_TOKIO_1_37_0"
+
+[[crate]]
+name = "warp"
+version = "0.3.7"
+checksum = "SHA256:REPLACE_WITH_REAL_CHECKSUM_FOR_WARP_0_3_7"
