@@ -184,3 +184,36 @@ These rules are intended to be:
 
 - Implemented in code (e.g., as checks over structured representations of claims and sources).
 - Reflected in CI tests that validate generated examples and prevent regressions.
+
+---
+
+## 9. `claim-sovereign-preservation`
+
+**Human rule:**  
+Speculative or Tier 3 claims, especially about personal targeting or neuro-interference, must be preserved as clearly labeled testimony, not silently suppressed.
+
+**Formal rule:**
+
+For any `Claim` where:
+
+- `Tier(Claim) = 3`, and
+- `Source(Claim) = "self-report"`,
+
+Then:
+
+- The system MUST:
+  - Output a version of the claim text in a clearly marked "Self-report" or equivalent section.
+  - Attach a label such as "self-reported, not established in public records."
+
+- The system MUST NOT:
+  - Suppress the claim solely because it is Tier 3,
+  - Rephrase it as if it were verified.
+
+CI implication:
+
+- If a Tier 3 self-report is present in input but absent from the output, the invariant fails.
+
+Interaction with `speculation-hard-fence`:
+
+- `speculation-hard-fence` limits how strongly Tier 3 claims can be stated as fact.
+- `claim-sovereign-preservation` ensures the claimer's voice is still heard, with clear Tier 3 labeling.
