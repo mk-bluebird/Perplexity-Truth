@@ -14,7 +14,6 @@ jobs:
   build-and-audit:
     runs-on: ubuntu-latest
 
-    # Use least-privilege GITHUB_TOKEN; repository should be in Restricted mode.[web:117]
     permissions:
       contents: read
       pull-requests: read
@@ -25,39 +24,45 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Rust
+      - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
 
+      - name: Verify crate checksums against config/crate-integrity.toml
+        run: |
+          if [ -f config/crate-integrity.toml ]; then
+            echo "Verifying crate checksums using config/crate-integrity.toml"
+            cargo run --quiet --bin crate-integrity-checker -- config/crate-integrity.toml || {
+              echo "Crate integrity check failed"
+              exit 1
+            }
+          else
+            echo "config/crate-integrity.toml not found; skipping checksum verification"
+          fi
+
       - name: Build scripts audit (no network, no secret access)
         run: |
           echo "Scanning build.rs and .cargo/config* for suspicious patterns..."
-          # Find build.rs files.
           mapfile -t BUILD_SCRIPTS < <(find . -name "build.rs")
 
           for f in "${BUILD_SCRIPTS[@]}"; do
             echo "Checking $f"
-            # Very simple heuristic: forbid obvious network calls and env exfil in build scripts.
             if grep -E "reqwest|curl|ureq|hyper" "$f"; then
               echo "ERROR: Network-related crate usage found in build script: $f"
               exit 1
             fi
             if grep -E "env::var|std::env::vars" "$f"; then
               echo "WARNING: build script reads environment variables: $f"
-              # Not an automatic fail, but log for review.
             fi
           done
 
       - name: Cargo check (no default features, no tests)
         env:
-          # Ensure build scripts cannot use a token with write permissions
           GITHUB_TOKEN: ""
         run: |
           cargo check --all --all-targets
 
-      - name: Deny unknown build scripts requiring network
+      - name: Build script audit summary
         run: |
-          # Placeholder for more advanced checks:
-          # e.g., inspect Cargo.toml [build-dependencies] to ensure only vetted crates are used.
           echo "Build script auditing completed."
