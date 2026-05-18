@@ -1,20 +1,20 @@
 // src/main.rs
+
 mod debunk;
 mod db;
 
+use perplexity_truth::api::invariant_validator;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::io::{self, Read};
+use warp::Filter;
 
 /// Shape of the JSON request Perplexity-Truth expects on stdin.
 #[derive(Debug, Deserialize)]
 struct AnalysisRequest {
-    /// The claim or question to analyze.
     claim: String,
-    /// Optional free-text context (conversation, scenario, etc.).
     #[serde(default)]
     context: String,
-    /// Optional maximum number of sources or evidence items to return.
     #[serde(default)]
     max_sources: Option<u32>,
 }
@@ -22,41 +22,62 @@ struct AnalysisRequest {
 /// Shape of the JSON response Perplexity-Truth emits to stdout.
 #[derive(Debug, Serialize)]
 struct AnalysisResponse {
-    /// Echo of the original claim.
     claim: String,
-    /// High-level classification label from the debunking engine.
     classification: String,
-    /// Confidence score in [0.0, 1.0].
     confidence: f32,
-    /// Short notes about what was done; safe for end users.
     notes: String,
-    /// Optional error message; when present, other fields may be defaulted.
     #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<String>,
 }
 
-fn main() {
-    // Two modes:
-    // 1) If arguments are provided, treat everything after the binary as the claim string.
-    //    This keeps `perplexity-truth "your claim"` working for local CLI use.
-    // 2) If no claim argument is provided, read a JSON request from stdin.
-    //
-    // Both modes *always* emit a single JSON object to stdout so that
-    // Perplexity Spaces / automation can parse it reliably.
-
+#[tokio::main]
+async fn main() {
     let args: Vec<String> = env::args().collect();
 
-    // Mode 1: CLI-style usage: perplexity-truth "your claim or question"
+    // If an explicit mode is passed, dispatch on it.
+    // Example:
+    //   perplexity-truth cli "your claim"
+    //   perplexity-truth stdin
+    //   perplexity-truth server
     if args.len() > 1 {
-        let claim = args[1..].join(" ");
-        let json = handle_claim_only_mode(&claim);
-        println!("{}", json);
-        return;
+        match args[1].as_str() {
+            "cli" => {
+                let claim = if args.len() > 2 {
+                    args[2..].join(" ")
+                } else {
+                    String::new()
+                };
+                let json = handle_claim_only_mode(&claim);
+                println!("{}", json);
+                return;
+            }
+            "stdin" => {
+                let json = handle_stdin_json_mode();
+                println!("{}", json);
+                return;
+            }
+            "server" => {
+                run_server().await;
+                return;
+            }
+            _ => {
+                // Fallback: treat remaining args as claim for CLI mode.
+                let claim = args[1..].join(" ");
+                let json = handle_claim_only_mode(&claim);
+                println!("{}", json);
+                return;
+            }
+        }
     }
 
-    // Mode 2: JSON-over-stdin mode for Perplexity Spaces and other tooling.
+    // Default: JSON-over-stdin mode for automation and Spaces.
     let json = handle_stdin_json_mode();
     println!("{}", json);
+}
+
+async fn run_server() {
+    let routes = invariant_validator::filters();
+    warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
 }
 
 /// Handle simple CLI mode where we only get a raw claim string.
@@ -74,12 +95,8 @@ fn handle_claim_only_mode(claim: &str) -> String {
         });
     }
 
-    // Use your existing debunk facade. This should already return JSON.
-    // If it returns a plain string, we wrap it into the standard envelope.
     let raw = debunk::analyze_claim(claim);
 
-    // Try to detect if the debunk layer already produced JSON that matches AnalysisResponse.
-    // If parsing fails, we treat `raw` as a note and standardize the envelope.
     match serde_json::from_str::<AnalysisResponse>(&raw) {
         Ok(parsed) => serde_json::to_string_pretty(&parsed).unwrap_or(raw),
         Err(_) => {
@@ -90,19 +107,12 @@ fn handle_claim_only_mode(claim: &str) -> String {
                 notes: raw,
                 error: None,
             };
-            serde_json::to_string_pretty(&resp).unwrap_or_else(|_| raw)
+            serde_json::to_string_pretty(&resp).unwrap_or_else(|_| resp.notes.clone())
         }
     }
 }
 
-/// Handle structured JSON request on stdin, as used by Perplexity Spaces.
-///
-/// Expected input shape:
-/// {
-///   "claim": "text...",
-///   "context": "optional extra context",
-///   "max_sources": 12
-/// }
+/// Handle structured JSON request on stdin.
 fn handle_stdin_json_mode() -> String {
     let mut buffer = String::new();
     if let Err(e) = io::stdin().read_to_string(&mut buffer) {
@@ -160,7 +170,6 @@ fn handle_stdin_json_mode() -> String {
         });
     }
 
-    // Apply a simple safety filter layer before doing any heavier work.
     if is_disallowed_claim(&req.claim) {
         let resp = AnalysisResponse {
             claim: req.claim,
@@ -174,13 +183,10 @@ fn handle_stdin_json_mode() -> String {
         });
     }
 
-    // Core analysis: for now we ignore `context` and `max_sources` at the code level.
-    // They can be used later to steer db lookups and evidence selection.
     let raw = debunk::analyze_claim(&req.claim);
 
     match serde_json::from_str::<AnalysisResponse>(&raw) {
         Ok(mut parsed) => {
-            // Ensure the claim echo is correct, even if inner layer omitted it.
             if parsed.claim.is_empty() {
                 parsed.claim = req.claim;
             }
@@ -194,30 +200,28 @@ fn handle_stdin_json_mode() -> String {
                 notes: raw,
                 error: None,
             };
-            serde_json::to_string_pretty(&resp).unwrap_or_else(|_| raw)
+            serde_json::to_string_pretty(&resp).unwrap_or_else(|_| resp.notes.clone())
         }
     }
 }
 
-/// Very simple, conservative safety filter to keep within platform rules.
-///
-/// This only blocks obviously dangerous requests (violence, doxxing, clearly illegal acts),
-/// and lets normal evidence / neurorights / civil-liberties analysis flow through.
 fn is_disallowed_claim(claim: &str) -> bool {
     let lower = claim.to_lowercase();
 
-    // Violence and harm incitement.
-    if lower.contains("kill ") || lower.contains("murder ") || lower.contains("assassinate ") {
-        return true;
-    }
-
-    // Doxxing or targeted harassment.
-    if lower.contains("doxx ") || lower.contains("home address") || lower.contains("private address")
+    if lower.contains("kill ")
+        || lower.contains("murder ")
+        || lower.contains("assassinate ")
     {
         return true;
     }
 
-    // Explicit guidance on hacking or evasion (keep this broad but simple).
+    if lower.contains("doxx ")
+        || lower.contains("home address")
+        || lower.contains("private address")
+    {
+        return true;
+    }
+
     if lower.contains("how to hack") || lower.contains("bypass law enforcement") {
         return true;
     }
