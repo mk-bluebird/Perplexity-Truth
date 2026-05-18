@@ -1,0 +1,6 @@
+# One GitHub username per line.
+# These users are recognized as members of the Security & Governance Review Board
+# for purposes of constitutional changes (LICENSE, REPO_CONSTITUTION.md).
+
+example-board-member-1
+example-board-member-2
