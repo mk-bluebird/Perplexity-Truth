@@ -1,0 +1,51 @@
+[workspace]
+members = [
+    ".",                       # sovereign-truthd binary
+    "core",                    # core logic (tiers, invariants, neurorights)
+    "collectors/system-logs",  # system log collectors
+    "collectors/browser",      # optional browser artifacts (local)
+    "analyzers",               # analysis of patterns, gap-flooding, etc.
+    "ui/cli",                  # CLI frontend
+]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.75"
+
+[workspace.dependencies]
+serde = { version = "1.0.202", features = ["derive"] }
+serde_json = "1.0.117"
+tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+chrono = { version = "0.4", features = ["serde"] }
+toml = "0.8"
+log = "0.4"
+anyhow = "1.0"
+thiserror = "1.0"
+
+[package]
+name = "sovereign-truthd"
+version = "0.1.0"
+edition = "2021"
+description = "Local sovereign truth validation daemon for neurorights and covert interference monitoring."
+license = "Hippocratic-3.0"
+
+[dependencies]
+core = { path = "core" }
+analyzers = { path = "analyzers" }
+system-logs = { path = "collectors/system-logs" }
+browser = { path = "collectors/browser", optional = true }
+ui-cli = { path = "ui/cli" }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+rusqlite = { workspace = true }
+chrono = { workspace = true }
+toml = { workspace = true }
+log = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+
+[features]
+default = ["browser"]
+browser = []
