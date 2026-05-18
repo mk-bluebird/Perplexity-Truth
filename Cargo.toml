@@ -1,63 +1,79 @@
-[package]
-name = "neurorights-defense"
-version = "0.1.0"
+[workspace]
+members = [
+    ".",                     # root crate: perplexity_truth
+    "perplexity_truth_tiers",
+    "neurorights-defense",
+]
+
+# Shared dependency overrides (vendor support).
+[patch.crates-io]
+# Dependencies will be vendored under ./vendor; this block tells Cargo to use them.
+# `cargo vendor` will populate this directory.
+"*"] = { path = "vendor" }
+
+[workspace.package]
 edition = "2021"
-authors = ["Perplexity-Truth Contributors"]
-description = "Core library for neurorights compliance analysis, neural data classification, and rights-based reporting"
-license = "Apache-2.0"
-repository = "https://github.com/mk-bluebird/Perplexity-Truth"
-keywords = ["neurorights", "privacy", "compliance", "neurotechnology", "ai-ethics"]
-categories = ["science", "web-programming"]
-readme = "README.md"
 rust-version = "1.75"
 
-[lib]
-name = "neurorights_defense"
-path = "src/rust/lib.rs"
-crate-type = ["lib", "cdylib"]
-
-[[bin]]
-name = "neurorights-cli"
-path = "src/rust/bin/cli.rs"
-required-features = ["cli-tool"]
-
-[[example]]
-name = "classify_scenario"
-path = "examples/classify_scenario.rs"
-
-[[example]]
-name = "policy_lookup"
-path = "examples/policy_lookup.rs"
-
-[[example]]
-name = "generate_report"
-path = "examples/generate_report.rs"
-
-[dependencies]
-rusqlite = { version = "0.32", features = ["bundled", "chrono", "serde_json"] }
-serde = { version = "1.0", features = ["derive", "rc"] }
-serde_json = "1.0"
+[workspace.dependencies]
+serde = { version = "1.0.202", features = ["derive"] }
+serde_json = "1.0.117"
 chrono = { version = "0.4", features = ["serde"] }
+tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread"] }
+warp = "0.3.7"
+rusqlite = { version = "0.32", features = ["bundled", "chrono", "serde_json"] }
 
 regex = "1.10"
 lazy_static = "1.5"
 once_cell = "1.19"
-
 lru = "0.12"
-
 thiserror = "1.0"
 anyhow = "1.0"
-
 log = "0.4"
 env_logger = { version = "0.11", optional = true }
-
 clap = { version = "4.5", features = ["derive", "env"], optional = true }
 colored = { version = "2.1", optional = true }
-
 serde_yaml = "0.9"
 toml = "0.8"
-
 uuid = { version = "1.8", features = ["v4", "serde"] }
+
+# Root crate: perplexity_truth
+[package]
+name = "perplexity_truth"
+version = "0.1.0"
+edition = "2021"
+authors = ["Perplexity-Truth Contributors"]
+description = "Evidence-tiered, invariants-driven analysis toolkit for neurorights, civil liberties, and documentation of complex incidents."
+license = "Apache-2.0"
+repository = "https://github.com/mk-bluebird/Perplexity-Truth"
+readme = "README.md"
+keywords = ["neurorights", "privacy", "compliance", "neurotechnology", "ai-ethics"]
+categories = ["science", "web-programming"]
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+tokio = { workspace = true }
+warp = { workspace = true }
+rusqlite = { workspace = true, optional = true }
+
+regex = { workspace = true }
+lazy_static = { workspace = true }
+once_cell = { workspace = true }
+lru = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true, optional = true }
+clap = { workspace = true, optional = true }
+colored = { workspace = true, optional = true }
+serde_yaml = { workspace = true }
+toml = { workspace = true }
+uuid = { workspace = true }
+
+perplexity_truth_tiers = { path = "perplexity_truth_tiers" }
+neurorights-defense = { path = "neurorights-defense", package = "neurorights-defense", optional = true }
 
 [dev-dependencies]
 tempfile = "3.10"
@@ -68,12 +84,20 @@ proptest = "1.4"
 [build-dependencies]
 cc = "1.0"
 
+[features]
+default = ["sqlite-bundled"]
+sqlite-bundled = ["rusqlite/bundled"]
+lua-scripting = []
+cli-tool = ["clap", "colored", "env_logger"]
+full = ["sqlite-bundled", "lua-scripting", "cli-tool"]
+
 [profile.dev]
 opt-level = 0
 debug = true
 
 [profile.release]
-opt-level = 3
+# Reproducible and optimized release settings.
+opt-level = "z"
 lto = "fat"
 strip = true
 codegen-units = 1
@@ -89,13 +113,6 @@ nix = { version = "0.28", features = ["process"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = { version = "0.3", features = ["processthreadsapi"] }
-
-[features]
-default = ["sqlite-bundled"]
-sqlite-bundled = ["rusqlite/bundled"]
-lua-scripting = []
-cli-tool = ["clap", "colored", "env_logger"]
-full = ["sqlite-bundled", "lua-scripting", "cli-tool"]
 
 [package.metadata.docs.rs]
 all-features = true
