@@ -1,0 +1,19 @@
+      - name: Record denylist hits
+        if: failure()  # only run if previous step detected deny hits
+        run: |
+          set -e
+          mkdir -p logs
+          ts="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          echo "[$ts] Denylist hit detected in run ${GITHUB_RUN_ID} on commit ${GITHUB_SHA}" >> logs/deny-hits.log
+          echo "  Ref: ${GITHUB_REF}" >> logs/deny-hits.log
+          echo "  Actor: ${GITHUB_ACTOR}" >> logs/deny-hits.log
+          echo "" >> logs/deny-hits.log
+
+          # Configure signing identity (use a GitHub App or bot GPG key in secrets).
+          git config user.name "ci-audit-bot"
+          git config user.email "ci-audit-bot@example.com"
+
+          git add logs/deny-hits.log
+          # Use -S to sign the commit; requires GPG key configured in the environment.
+          git commit -S -m "chore: record denylist hit for run ${GITHUB_RUN_ID}" || echo "No changes to commit."
+          git push origin HEAD:${GITHUB_REF_NAME} || echo "Push skipped or failed (check permissions)."
