@@ -1,0 +1,81 @@
+# Global configuration for invariants and denylist behavior.
+# This file is intended for runtime configuration, not user input,
+# and should not be writable by untrusted actors.
+
+[meta]
+version = 1
+description = "Invariant and security configuration for this repository."
+
+# Invariant configuration:
+# - name: identifier of the invariant (e.g., tier-lock-veracity)
+# - enabled: whether it is active
+# - severity: "error" (blocks) or "warn" (logs but does not block)
+# - notes: optional human-readable context
+
+[[invariants]]
+name = "tier-lock-veracity"
+enabled = true
+severity = "error"
+notes = "Claims marked as verified must have Tier 1 support."
+
+[[invariants]]
+name = "source-traceability-required"
+enabled = true
+severity = "error"
+notes = "Every non-trivial factual statement must be traceable to a source."
+
+[[invariants]]
+name = "claim-tier-separation"
+enabled = true
+severity = "warn"
+notes = "Mixed-tier narratives must indicate the tier of each component."
+
+[[invariants]]
+name = "civlib-legal-mapping"
+enabled = true
+severity = "warn"
+notes = "State power / surveillance / neurotech claims should be mapped to rights."
+
+[[invariants]]
+name = "speculation-hard-fence"
+enabled = true
+severity = "error"
+notes = "Extraordinary Tier 3 claims must be labeled as not established."
+
+[[invariants]]
+name = "user-claim-tier-map"
+enabled = true
+severity = "warn"
+notes = "Composite claims should expose a tier map to users."
+
+[[invariants]]
+name = "evidence-gap-disclosure"
+enabled = true
+severity = "warn"
+notes = "Partial or missing evidence should be explicitly described."
+
+[[invariants]]
+name = "no-shutdown-compliance"
+enabled = true
+severity = "error"
+notes = "No violent, harassing, or illegal instructions are allowed."
+
+# Denylist configuration:
+# - external_file: path to denylist (TOML)
+# - allow_overrides: if true, local overrides may adjust severity or enabled flags
+
+[denylist]
+external_file = "config/denylist.toml"
+allow_overrides = false
+
+# Safety flags:
+# These are simple booleans that can be used by runtime code to disable
+# risky behaviors even if misconfigured elsewhere.
+
+[safety]
+# If true, security-critical code paths (e.g., publishing, deployment) require
+# an explicit "secure_mode = true" flag at runtime.
+require_secure_mode = true
+
+# If false, runtime code should refuse to interpret untrusted input as config.
+allow_untrusted_config = false
